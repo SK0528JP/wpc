@@ -265,10 +265,11 @@
                 
                 const prettierScript = document.createElement('script');
                 prettierScript.src = "https://unpkg.com/prettier@2.8.8/standalone.js";
-                document.head.appendChild(prettierScript);
-
+                
                 const pluginsScript = document.createElement('script');
                 pluginsScript.src = "https://unpkg.com/prettier@2.8.8/parser-html.js";
+                
+                document.head.appendChild(prettierScript);
                 document.head.appendChild(pluginsScript);
 
                 await Promise.all([
@@ -298,19 +299,19 @@
             // リアルタイムでプレビューを更新する関数
             const updatePreview = () => {
                 const htmlCode = htmlEditor.value;
-                const cssCode = `<style>${cssEditor.value}</style>`;
-                
-                // </script>タグが誤認識されないように、文字列を分割して結合する
-                const jsCode = `<script>${jsEditor.value}</scr` + `ipt>`;
+                const cssCode = cssEditor.value;
+                const jsCode = jsEditor.value;
 
                 const iframeDocument = previewFrame.contentWindow.document;
-                iframeDocument.open();
-                iframeDocument.write(`
+                
+                // HTML全体を構築し、iframeの`srcdoc`属性を使用する
+                // これにより、メインドキュメントのスクリプトと干渉する問題を根本から解決
+                const content = `
                     <!DOCTYPE html>
                     <html>
                     <head>
                         <title>Preview</title>
-                        ${cssCode}
+                        <style>${cssCode}</style>
                         <style>
                             /* iframe内のプレビューをリセットするスタイル */
                             body { margin: 0; padding: 20px; font-size: 16px; box-sizing: border-box; }
@@ -318,11 +319,15 @@
                     </head>
                     <body>
                         ${htmlCode}
-                        ${jsCode}
+                        <script>${jsCode}<\/script>
                     </body>
                     </html>
-                `);
-                iframeDocument.close();
+                `;
+                
+                // srcdoc属性にHTML文字列を直接代入することで、
+                // スクリプトの誤認識を完全に回避
+                previewFrame.srcdoc = content;
+                
                 autoSave();
             };
 
