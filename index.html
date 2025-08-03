@@ -252,14 +252,13 @@
             
             // デフォルトのコードスニペット
             const defaultCode = {
-                html: `<h1>Hello, World!</h1>`,
-                css: `body {\n  font-family: 'Roboto', sans-serif;\n  color: #333;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  min-height: 100vh;\n  margin: 0;\n}\n\nh1 {\n  color: #4d7a4d;\n}`,
-                js: `console.log("Hello from JavaScript!");`
+                html: ``,
+                css: ``,
+                js: ``
             };
             
             let prettierLoaded = false;
 
-            // Prettierライブラリを動的に読み込み
             const loadPrettier = async () => {
                 formatCodeBtn.disabled = true;
                 
@@ -281,7 +280,6 @@
                 formatCodeBtn.disabled = false;
             };
 
-            // LocalStorageからコードを読み込む
             const loadCode = () => {
                 htmlEditor.value = localStorage.getItem('editor_html_code') || defaultCode.html;
                 cssEditor.value = localStorage.getItem('editor_css_code') || defaultCode.css;
@@ -289,23 +287,17 @@
                 updatePreview();
             };
 
-            // LocalStorageにコードを自動保存する
             const autoSave = () => {
                 localStorage.setItem('editor_html_code', htmlEditor.value);
                 localStorage.setItem('editor_css_code', cssEditor.value);
                 localStorage.setItem('editor_js_code', jsEditor.value);
             };
 
-            // リアルタイムでプレビューを更新する関数
             const updatePreview = () => {
                 const htmlCode = htmlEditor.value;
                 const cssCode = cssEditor.value;
                 const jsCode = jsEditor.value;
 
-                const iframeDocument = previewFrame.contentWindow.document;
-                
-                // HTML全体を構築し、iframeの`srcdoc`属性を使用する
-                // これにより、メインドキュメントのスクリプトと干渉する問題を根本から解決
                 const content = `
                     <!DOCTYPE html>
                     <html>
@@ -313,7 +305,6 @@
                         <title>Preview</title>
                         <style>${cssCode}</style>
                         <style>
-                            /* iframe内のプレビューをリセットするスタイル */
                             body { margin: 0; padding: 20px; font-size: 16px; box-sizing: border-box; }
                         </style>
                     </head>
@@ -324,14 +315,11 @@
                     </html>
                 `;
                 
-                // srcdoc属性にHTML文字列を直接代入することで、
-                // スクリプトの誤認識を完全に回避
                 previewFrame.srcdoc = content;
                 
                 autoSave();
             };
 
-            // デバウンス関数
             const debounce = (func, delay) => {
                 let timeout;
                 return (...args) => {
@@ -342,7 +330,6 @@
             
             const debouncedUpdatePreview = debounce(updatePreview, 500);
 
-            // コード整形機能
             const formatCode = async () => {
                 if (!prettierLoaded) {
                     alert("コード整形ライブラリの読み込み中です。しばらくお待ちください。");
@@ -359,7 +346,6 @@
                 }
             };
             
-            // テーマ切り替え
             const toggleTheme = () => {
                 const isLight = document.body.classList.toggle('light-theme');
                 localStorage.setItem('editor_theme', isLight ? 'light' : 'dark');
@@ -374,7 +360,6 @@
                 }
             };
             
-            // コードをリセット
             const resetCode = () => {
                 const confirmReset = confirm("本当にコードを初期状態に戻しますか？現在の内容は失われます。");
                 if (confirmReset) {
@@ -385,7 +370,6 @@
                 }
             };
 
-            // コードをクリップボードにコピー
             const copyCode = (editorId) => {
                 const editor = document.getElementById(editorId);
                 editor.select();
@@ -393,7 +377,6 @@
                 alert("コードがコピーされました！");
             };
 
-            // イベントリスナーの設定
             htmlEditor.addEventListener('keyup', debouncedUpdatePreview);
             cssEditor.addEventListener('keyup', debouncedUpdatePreview);
             jsEditor.addEventListener('keyup', debouncedUpdatePreview);
@@ -408,7 +391,6 @@
                 });
             });
 
-            // 初期ロード
             loadTheme();
             loadCode();
             loadPrettier();
