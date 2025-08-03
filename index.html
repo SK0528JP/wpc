@@ -6,7 +6,7 @@
     <title>ライブコーディングエディター</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
@@ -20,7 +20,6 @@
             --primary-color: var(--matcha-green);
         }
 
-        /* ライトテーマ */
         body.light-theme {
             --dark-bg: #f5f5f5;
             --editor-bg: #ffffff;
@@ -49,7 +48,6 @@
             transition: background-color 0.3s, color 0.3s;
         }
 
-        /* ツールバー */
         .toolbar {
             display: flex;
             justify-content: space-between;
@@ -57,12 +55,22 @@
             padding: 10px 20px;
             background-color: var(--editor-bg);
             border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
         }
 
         .toolbar-title {
             font-size: 20px;
             font-weight: 500;
             color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .toolbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .toolbar-actions button {
@@ -70,7 +78,6 @@
             color: var(--text-color);
             border: none;
             padding: 8px 12px;
-            margin-left: 10px;
             border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.2s, transform 0.1s;
@@ -84,19 +91,22 @@
             transform: scale(0.98);
         }
 
+        .toolbar-actions button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
         .container {
             display: flex;
             flex-grow: 1;
             overflow: hidden;
         }
 
-        /* エディタとプレビューのパネル */
         .editors, .preview-panel {
             display: flex;
             flex-direction: column;
-            padding: 10px;
             flex: 1;
-            transition: all 0.3s ease-in-out;
+            padding: 10px;
             min-width: 0;
         }
 
@@ -106,6 +116,10 @@
             }
             .editors, .preview-panel {
                 height: 50%;
+                padding-top: 0;
+            }
+            .editors {
+                padding-bottom: 0;
             }
         }
 
@@ -114,17 +128,33 @@
             flex-direction: column;
             flex: 1;
             margin-bottom: 10px;
+            position: relative;
+        }
+        
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
         }
 
-        .editor-panel:last-child {
-            margin-bottom: 0;
-        }
-
-        label {
+        .editor-header label {
             font-size: 14px;
             font-weight: 500;
             color: var(--primary-color);
-            margin-bottom: 5px;
+        }
+
+        .editor-header button {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        
+        .editor-header button:hover {
+            opacity: 1;
         }
 
         textarea {
@@ -132,23 +162,22 @@
             background-color: var(--editor-bg);
             color: var(--text-color);
             border: 1px solid var(--border-color);
-            padding: 10px;
-            font-size: 16px;
+            padding: 12px;
+            font-size: 15px;
             font-family: 'Roboto Mono', 'Courier New', Courier, monospace;
             resize: none;
             box-sizing: border-box;
             outline: none;
             transition: border-color 0.2s, background-color 0.3s, color 0.3s;
+            line-height: 1.6;
         }
 
         textarea:focus {
             border-color: var(--primary-color);
         }
         
-        /* プレビュー */
         .preview-panel {
             border-left: 2px solid var(--border-color);
-            position: relative;
         }
 
         @media (max-width: 768px) {
@@ -173,23 +202,33 @@
     <div class="toolbar">
         <span class="toolbar-title">ライブコーディングエディター</span>
         <div class="toolbar-actions">
-            <button id="theme-toggle"><i class="fas fa-sun"></i></button>
-            <button id="format-code">コード整形</button>
+            <button id="reset-code" title="コードをリセット"><i class="fas fa-undo"></i></button>
+            <button id="format-code" title="コードを整形"><i class="fas fa-magic"></i></button>
+            <button id="theme-toggle" title="テーマを切り替える"><i class="fas fa-sun"></i></button>
         </div>
     </div>
 
     <div class="container">
         <div class="editors">
             <div class="editor-panel">
-                <label for="html-editor">HTML</label>
+                <div class="editor-header">
+                    <label for="html-editor">HTML</label>
+                    <button class="copy-btn" data-editor="html-editor" title="コードをコピー"><i class="fas fa-copy"></i></button>
+                </div>
                 <textarea id="html-editor" spellcheck="false"></textarea>
             </div>
             <div class="editor-panel">
-                <label for="css-editor">CSS</label>
+                <div class="editor-header">
+                    <label for="css-editor">CSS</label>
+                    <button class="copy-btn" data-editor="css-editor" title="コードをコピー"><i class="fas fa-copy"></i></button>
+                </div>
                 <textarea id="css-editor" spellcheck="false"></textarea>
             </div>
             <div class="editor-panel">
-                <label for="js-editor">JS</label>
+                <div class="editor-header">
+                    <label for="js-editor">JS</label>
+                    <button class="copy-btn" data-editor="js-editor" title="コードをコピー"><i class="fas fa-copy"></i></button>
+                </div>
                 <textarea id="js-editor" spellcheck="false"></textarea>
             </div>
         </div>
@@ -208,12 +247,22 @@
             const previewFrame = document.getElementById('preview-frame');
             const themeToggleBtn = document.getElementById('theme-toggle');
             const formatCodeBtn = document.getElementById('format-code');
+            const resetCodeBtn = document.getElementById('reset-code');
+            const copyButtons = document.querySelectorAll('.copy-btn');
+            
+            // デフォルトのコードスニペット
+            const defaultCode = {
+                html: `<h1>Hello, World!</h1>`,
+                css: `body {\n  font-family: 'Roboto', sans-serif;\n  color: #333;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  min-height: 100vh;\n  margin: 0;\n}\n\nh1 {\n  color: #4d7a4d;\n}`,
+                js: `console.log("Hello from JavaScript!");`
+            };
+            
+            let prettierLoaded = false;
 
             // Prettierライブラリを動的に読み込み
             const loadPrettier = async () => {
-                if (window.prettier && window.prettierPluginsBabel && window.prettierPluginsEstree && window.prettierPluginsHtml) {
-                    return;
-                }
+                formatCodeBtn.disabled = true;
+                
                 const prettierScript = document.createElement('script');
                 prettierScript.src = "https://unpkg.com/prettier@2.8.8/standalone.js";
                 document.head.appendChild(prettierScript);
@@ -221,31 +270,38 @@
                 const pluginsScript = document.createElement('script');
                 pluginsScript.src = "https://unpkg.com/prettier@2.8.8/parser-html.js";
                 document.head.appendChild(pluginsScript);
-            
-                // 読み込み完了を待機
-                await new Promise(resolve => prettierScript.onload = pluginsScript.onload = resolve);
+
+                await Promise.all([
+                    new Promise(resolve => prettierScript.onload = resolve),
+                    new Promise(resolve => pluginsScript.onload = resolve),
+                ]);
+
+                prettierLoaded = true;
+                formatCodeBtn.disabled = false;
             };
 
             // LocalStorageからコードを読み込む
             const loadCode = () => {
-                htmlEditor.value = localStorage.getItem('htmlCode') || '<h1>Hello, World!</h1>';
-                cssEditor.value = localStorage.getItem('cssCode') || 'body { font-family: sans-serif; color: #333; }';
-                jsEditor.value = localStorage.getItem('jsCode') || 'console.log("Hello from JavaScript!");';
+                htmlEditor.value = localStorage.getItem('editor_html_code') || defaultCode.html;
+                cssEditor.value = localStorage.getItem('editor_css_code') || defaultCode.css;
+                jsEditor.value = localStorage.getItem('editor_js_code') || defaultCode.js;
                 updatePreview();
             };
 
             // LocalStorageにコードを自動保存する
             const autoSave = () => {
-                localStorage.setItem('htmlCode', htmlEditor.value);
-                localStorage.setItem('cssCode', cssEditor.value);
-                localStorage.setItem('jsCode', jsEditor.value);
+                localStorage.setItem('editor_html_code', htmlEditor.value);
+                localStorage.setItem('editor_css_code', cssEditor.value);
+                localStorage.setItem('editor_js_code', jsEditor.value);
             };
 
             // リアルタイムでプレビューを更新する関数
             const updatePreview = () => {
                 const htmlCode = htmlEditor.value;
                 const cssCode = `<style>${cssEditor.value}</style>`;
-                const jsCode = `<script>${jsEditor.value}</script>`;
+                
+                // </script>タグが誤認識されないように、文字列を分割して結合する
+                const jsCode = `<script>${jsEditor.value}</scr` + `ipt>`;
 
                 const iframeDocument = previewFrame.contentWindow.document;
                 iframeDocument.open();
@@ -255,6 +311,10 @@
                     <head>
                         <title>Preview</title>
                         ${cssCode}
+                        <style>
+                            /* iframe内のプレビューをリセットするスタイル */
+                            body { margin: 0; padding: 20px; font-size: 16px; box-sizing: border-box; }
+                        </style>
                     </head>
                     <body>
                         ${htmlCode}
@@ -266,42 +326,87 @@
                 autoSave();
             };
 
+            // デバウンス関数
+            const debounce = (func, delay) => {
+                let timeout;
+                return (...args) => {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(this, args), delay);
+                };
+            };
+            
+            const debouncedUpdatePreview = debounce(updatePreview, 500);
+
             // コード整形機能
             const formatCode = async () => {
+                if (!prettierLoaded) {
+                    alert("コード整形ライブラリの読み込み中です。しばらくお待ちください。");
+                    return;
+                }
                 try {
-                    await loadPrettier();
-                    htmlEditor.value = window.prettier.format(htmlEditor.value, { parser: "html", plugins: window.prettierPlugins });
-                    cssEditor.value = window.prettier.format(cssEditor.value, { parser: "css", plugins: window.prettierPlugins });
-                    jsEditor.value = window.prettier.format(jsEditor.value, { parser: "babel", plugins: window.prettierPlugins });
+                    htmlEditor.value = prettier.format(htmlEditor.value, { parser: "html", plugins: prettierPlugins });
+                    cssEditor.value = prettier.format(cssEditor.value, { parser: "css", plugins: prettierPlugins });
+                    jsEditor.value = prettier.format(jsEditor.value, { parser: "babel", plugins: prettierPlugins });
                     updatePreview();
                 } catch (e) {
                     console.error("コードの整形に失敗しました:", e);
+                    alert("コードの整形に失敗しました。構文エラーがないか確認してください。");
                 }
             };
             
             // テーマ切り替え
             const toggleTheme = () => {
-                document.body.classList.toggle('light-theme');
-                localStorage.setItem('theme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
+                const isLight = document.body.classList.toggle('light-theme');
+                localStorage.setItem('editor_theme', isLight ? 'light' : 'dark');
+                themeToggleBtn.querySelector('i').className = isLight ? 'fas fa-moon' : 'fas fa-sun';
             };
 
             const loadTheme = () => {
-                if (localStorage.getItem('theme') === 'light') {
+                const savedTheme = localStorage.getItem('editor_theme');
+                if (savedTheme === 'light') {
                     document.body.classList.add('light-theme');
+                    themeToggleBtn.querySelector('i').className = 'fas fa-moon';
+                }
+            };
+            
+            // コードをリセット
+            const resetCode = () => {
+                const confirmReset = confirm("本当にコードを初期状態に戻しますか？現在の内容は失われます。");
+                if (confirmReset) {
+                    htmlEditor.value = defaultCode.html;
+                    cssEditor.value = defaultCode.css;
+                    jsEditor.value = defaultCode.js;
+                    updatePreview();
                 }
             };
 
+            // コードをクリップボードにコピー
+            const copyCode = (editorId) => {
+                const editor = document.getElementById(editorId);
+                editor.select();
+                document.execCommand('copy');
+                alert("コードがコピーされました！");
+            };
+
             // イベントリスナーの設定
-            htmlEditor.addEventListener('keyup', updatePreview);
-            cssEditor.addEventListener('keyup', updatePreview);
-            jsEditor.addEventListener('keyup', updatePreview);
+            htmlEditor.addEventListener('keyup', debouncedUpdatePreview);
+            cssEditor.addEventListener('keyup', debouncedUpdatePreview);
+            jsEditor.addEventListener('keyup', debouncedUpdatePreview);
             themeToggleBtn.addEventListener('click', toggleTheme);
             formatCodeBtn.addEventListener('click', formatCode);
+            resetCodeBtn.addEventListener('click', resetCode);
+            
+            copyButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const editorId = e.currentTarget.dataset.editor;
+                    copyCode(editorId);
+                });
+            });
 
             // 初期ロード
             loadTheme();
             loadCode();
-            loadPrettier(); // Prettierを非同期で読み込み
+            loadPrettier();
         });
     </script>
 </body>
