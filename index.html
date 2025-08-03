@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ライブコーディングエディター</title>
+    <title>WebPreviewCode</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -201,16 +201,84 @@
             height: 100%;
             border-radius: 4px;
         }
+
+        /* モーダルウィンドウのスタイル */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--editor-bg);
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            position: relative;
+            text-align: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            color: var(--text-color);
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-button:hover {
+            color: var(--primary-color);
+        }
+
+        .modal-content h2 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        .modal-content p {
+            margin: 15px 0;
+            line-height: 1.8;
+        }
+
+        .modal-content a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        .modal-content a:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="toolbar">
-        <span class="toolbar-title">ライブコーディングエディター</span>
+        <span class="toolbar-title">WebPreviewCode</span>
         <div class="toolbar-actions">
             <button id="open-new-window" title="プレビューを別ウィンドウで開く"><i class="fas fa-external-link-alt"></i></button>
-            <button id="reset-all-code" title="全コードをリセット"><i class="fas fa-undo"></i></button>
-            <button id="format-code" title="コードを整形"><i class="fas fa-magic"></i></button>
             <button id="theme-toggle" title="テーマを切り替える"><i class="fas fa-sun"></i></button>
+            <button id="reset-all-code" title="全コードをリセット"><i class="fas fa-undo"></i></button>
+            <button id="creator-info-btn" title="制作者情報"><i class="fas fa-info-circle"></i></button>
         </div>
     </div>
 
@@ -254,6 +322,16 @@
         </div>
     </div>
 
+    <div id="creator-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>制作者情報</h2>
+            <p><strong>制作者名：</strong>SK0528JP</p>
+            <p><strong>ホームページ：</strong> <a href="https://sk0528jp.github.io/" target="_blank">https://sk0528jp.github.io/</a></p>
+            <p><strong>メールアドレス：</strong> <a href="mailto:sk0528jp@gmail.com">sk0528jp@gmail.com</a></p>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const htmlEditor = document.getElementById('html-editor');
@@ -261,42 +339,20 @@
             const jsEditor = document.getElementById('js-editor');
             const previewFrame = document.getElementById('preview-frame');
             const themeToggleBtn = document.getElementById('theme-toggle');
-            const formatCodeBtn = document.getElementById('format-code');
             const resetAllCodeBtn = document.getElementById('reset-all-code');
             const openNewWindowBtn = document.getElementById('open-new-window');
             const copyButtons = document.querySelectorAll('.copy-btn');
             const clearButtons = document.querySelectorAll('.clear-btn');
+            const creatorInfoBtn = document.getElementById('creator-info-btn');
+            const creatorModal = document.getElementById('creator-modal');
+            const closeModalBtn = document.querySelector('.close-button');
             
-            // デフォルトのコードスニペット
             const defaultCode = {
                 html: ``,
                 css: ``,
                 js: ``
             };
             
-            let prettierLoaded = false;
-
-            const loadPrettier = async () => {
-                formatCodeBtn.disabled = true;
-                
-                const prettierScript = document.createElement('script');
-                prettierScript.src = "https://unpkg.com/prettier@2.8.8/standalone.js";
-                
-                const pluginsScript = document.createElement('script');
-                pluginsScript.src = "https://unpkg.com/prettier@2.8.8/parser-html.js";
-                
-                document.head.appendChild(prettierScript);
-                document.head.appendChild(pluginsScript);
-
-                await Promise.all([
-                    new Promise(resolve => prettierScript.onload = resolve),
-                    new Promise(resolve => pluginsScript.onload = resolve),
-                ]);
-
-                prettierLoaded = true;
-                formatCodeBtn.disabled = false;
-            };
-
             const loadCode = () => {
                 htmlEditor.value = localStorage.getItem('editor_html_code') || defaultCode.html;
                 cssEditor.value = localStorage.getItem('editor_css_code') || defaultCode.css;
@@ -346,22 +402,6 @@
             };
             
             const debouncedUpdatePreview = debounce(updatePreview, 500);
-
-            const formatCode = async () => {
-                if (!prettierLoaded) {
-                    alert("コード整形ライブラリの読み込み中です。しばらくお待ちください。");
-                    return;
-                }
-                try {
-                    htmlEditor.value = prettier.format(htmlEditor.value, { parser: "html", plugins: prettierPlugins });
-                    cssEditor.value = prettier.format(cssEditor.value, { parser: "css", plugins: prettierPlugins });
-                    jsEditor.value = prettier.format(jsEditor.value, { parser: "babel", plugins: prettierPlugins });
-                    updatePreview();
-                } catch (e) {
-                    console.error("コードの整形に失敗しました:", e);
-                    alert("コードの整形に失敗しました。構文エラーがないか確認してください。");
-                }
-            };
             
             const toggleTheme = () => {
                 const isLight = document.body.classList.toggle('light-theme');
@@ -422,11 +462,25 @@
                 newWindow.document.close();
             };
 
+            // モーダル表示/非表示の処理
+            creatorInfoBtn.addEventListener('click', () => {
+                creatorModal.style.display = 'flex';
+            });
+
+            closeModalBtn.addEventListener('click', () => {
+                creatorModal.style.display = 'none';
+            });
+
+            window.addEventListener('click', (e) => {
+                if (e.target === creatorModal) {
+                    creatorModal.style.display = 'none';
+                }
+            });
+
             htmlEditor.addEventListener('keyup', debouncedUpdatePreview);
             cssEditor.addEventListener('keyup', debouncedUpdatePreview);
             jsEditor.addEventListener('keyup', debouncedUpdatePreview);
             themeToggleBtn.addEventListener('click', toggleTheme);
-            formatCodeBtn.addEventListener('click', formatCode);
             resetAllCodeBtn.addEventListener('click', resetAllCode);
             openNewWindowBtn.addEventListener('click', openInNewWindow);
             
@@ -446,7 +500,6 @@
 
             loadTheme();
             loadCode();
-            loadPrettier();
         });
     </script>
 </body>
