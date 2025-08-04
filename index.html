@@ -18,15 +18,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
-    <script src="https://cdn.jsdelivr.net/npm/@codemirror/state@6.4.1/dist/index.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@codemirror/view@6.26.1/dist/index.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@codemirror/language@6.10.1/dist/index.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@codemirror/lang-html@6.4.1/dist/index.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@codemirror/lang-css@6.2.1/dist/index.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@codemirror/lang-javascript@6.2.1/dist/index.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@codemirror/basic-setup@0.21.1/dist/index.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@6.0.0-rc.2/theme/dracula.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@6.0.0-rc.2/theme/one-dark.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@codemirror/theme-one-dark@6.1.2/dist/theme-one-dark.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@codemirror/theme-dracula@6.1.2/dist/theme-dracula.min.css">
 
     <style>
         @font-face {
@@ -61,18 +54,6 @@
             --button-hover-bg: #ddd;
         }
 
-        /* CodeMirrorのダークテーマを適用 */
-        body:not(.light-theme) .cm-editor {
-            background-color: var(--editor-bg) !important;
-        }
-
-        /* CodeMirrorのライトテーマを適用 */
-        body.light-theme .cm-editor {
-            background-color: var(--editor-bg) !important;
-            color: var(--text-primary) !important;
-        }
-
-        /* CodeMirrorの基本的なスタイル */
         .cm-editor {
             flex: 1;
             font-family: 'Roboto Mono', monospace;
@@ -84,17 +65,16 @@
             outline: none;
         }
         
-        .cm-theme-dark {
-            background-color: #2a2a2a;
-            color: #E8E8E8;
+        .cm-s-one-dark {
+            background-color: var(--editor-bg) !important;
+            color: var(--text-primary) !important;
         }
         
-        .cm-theme-light {
-            background-color: #ffffff;
-            color: #1e1e1e;
+        body.light-theme .cm-s-one-dark {
+            background-color: var(--editor-bg) !important;
+            color: var(--text-primary) !important;
         }
 
-        /* 他のスタイルは変更なし */
         * {
             box-sizing: border-box;
             -webkit-font-smoothing: antialiased;
@@ -252,7 +232,7 @@
         }
 
         textarea {
-            display: none; /* CodeMirrorを使用するため非表示に */
+            display: none;
         }
         
         .preview-panel {
@@ -268,7 +248,7 @@
 
         iframe {
             flex: 1;
-            background-color: white; /* プレビューを白色に固定 */
+            background-color: white;
             border: 1px solid var(--border-color);
             box-sizing: border-box;
             width: 100%;
@@ -277,7 +257,6 @@
             transition: border-color 0.3s;
         }
 
-        /* モーダルウィンドウのスタイル */
         .modal {
             display: none;
             position: fixed;
@@ -417,11 +396,15 @@
     </div>
 
     <script type="module">
-        import {EditorView, basicSetup} from "https://cdn.jsdelivr.net/npm/codemirror@6.0.0-rc.2/+esm";
-        import {html} from "https://cdn.jsdelivr.net/npm/@codemirror/lang-html@6.0.0-rc.2/+esm";
-        import {css} from "https://cdn.jsdelivr.net/npm/@codemirror/lang-css@6.0.0-rc.2/+esm";
-        import {javascript} from "https://cdn.jsdelivr.net/npm/@codemirror/lang-javascript@6.0.0-rc.2/+esm";
-        
+        import {EditorView, EditorState} from "https://cdn.jsdelivr.net/npm/@codemirror/view@6.26.1/dist/index.min.js";
+        import {indentWithTab} from "https://cdn.jsdelivr.net/npm/@codemirror/commands@6.3.3/dist/index.min.js";
+        import {Compartment} from "https://cdn.jsdelivr.net/npm/@codemirror/state@6.4.1/dist/index.min.js";
+        import {syntaxHighlighting, defaultHighlightStyle} from "https://cdn.jsdelivr.net/npm/@codemirror/language@6.10.1/dist/index.min.js";
+        import {html} from "https://cdn.jsdelivr.net/npm/@codemirror/lang-html@6.4.1/dist/index.min.js";
+        import {css} from "https://cdn.jsdelivr.net/npm/@codemirror/lang-css@6.2.1/dist/index.min.js";
+        import {javascript} from "https://cdn.jsdelivr.net/npm/@codemirror/lang-javascript@6.2.1/dist/index.min.js";
+        import {oneDark} from "https://cdn.jsdelivr.net/npm/@codemirror/theme-one-dark@6.1.2/+esm";
+
         document.addEventListener('DOMContentLoaded', () => {
             const previewFrame = document.getElementById('preview-frame');
             const themeToggleBtn = document.getElementById('theme-toggle');
@@ -441,10 +424,11 @@
                 js: ``
             };
             
-            // CodeMirrorエディタの初期化
+            const theme = new Compartment();
+
             const createEditor = (parent, extension, defaultText) => {
                 const editor = new EditorView({
-                    state: CodeMirror.EditorState.create({
+                    state: EditorState.create({
                         doc: localStorage.getItem(`editor_${parent}_code`) || defaultText,
                         extensions: [
                             basicSetup,
@@ -453,7 +437,9 @@
                                 if (update.docChanged) {
                                     debouncedUpdatePreview();
                                 }
-                            })
+                            }),
+                            EditorView.lineWrapping,
+                            theme.of(oneDark) // デフォルトでダークテーマを適用
                         ]
                     }),
                     parent: document.getElementById(`${parent}-container`)
@@ -461,9 +447,9 @@
                 return editor;
             };
 
-            const htmlEditor = createEditor('html-editor', html, defaultCode.html);
-            const cssEditor = createEditor('css-editor', css, defaultCode.css);
-            const jsEditor = createEditor('js-editor', javascript, defaultCode.js);
+            const htmlEditor = createEditor('html', html, defaultCode.html);
+            const cssEditor = createEditor('css', css, defaultCode.css);
+            const jsEditor = createEditor('js', javascript, defaultCode.js);
 
             const getEditorContent = (editor) => editor.state.doc.toString();
             
@@ -491,7 +477,6 @@
                 
                 previewFrame.srcdoc = content;
                 
-                // 自動保存
                 localStorage.setItem('editor_html_code', htmlCode);
                 localStorage.setItem('editor_css_code', cssCode);
                 localStorage.setItem('editor_js_code', jsCode);
@@ -512,6 +497,11 @@
                 localStorage.setItem('editor_theme', isLight ? 'light' : 'dark');
                 const themeIcon = themeToggleBtn.querySelector('i');
                 themeIcon.className = isLight ? 'fas fa-moon' : 'fas fa-sun';
+
+                const newTheme = isLight ? EditorView.theme({}, {dark: false}) : oneDark;
+                htmlEditor.dispatch({effects: theme.reconfigure(newTheme)});
+                cssEditor.dispatch({effects: theme.reconfigure(newTheme)});
+                jsEditor.dispatch({effects: theme.reconfigure(newTheme)});
             };
 
             const loadTheme = () => {
@@ -520,6 +510,11 @@
                     document.body.classList.add('light-theme');
                     const themeIcon = themeToggleBtn.querySelector('i');
                     themeIcon.className = 'fas fa-moon';
+                    
+                    const newTheme = EditorView.theme({}, {dark: false});
+                    htmlEditor.dispatch({effects: theme.reconfigure(newTheme)});
+                    cssEditor.dispatch({effects: theme.reconfigure(newTheme)});
+                    jsEditor.dispatch({effects: theme.reconfigure(newTheme)});
                 }
             };
             
@@ -535,15 +530,9 @@
                 }
                 
                 if (confirm(confirmMessage)) {
-                    htmlEditor.dispatch({
-                        changes: {from: 0, to: htmlEditor.state.doc.length, insert: defaultCode.html}
-                    });
-                    cssEditor.dispatch({
-                        changes: {from: 0, to: cssEditor.state.doc.length, insert: defaultCode.css}
-                    });
-                    jsEditor.dispatch({
-                        changes: {from: 0, to: jsEditor.state.doc.length, insert: defaultCode.js}
-                    });
+                    htmlEditor.dispatch({changes: {from: 0, to: htmlEditor.state.doc.length, insert: defaultCode.html}});
+                    cssEditor.dispatch({changes: {from: 0, to: cssEditor.state.doc.length, insert: defaultCode.css}});
+                    jsEditor.dispatch({changes: {from: 0, to: jsEditor.state.doc.length, insert: defaultCode.js}});
                     updatePreview();
                 }
             };
@@ -554,9 +543,7 @@
                 if (editorId === 'css') editor = cssEditor;
                 if (editorId === 'js') editor = jsEditor;
 
-                editor.dispatch({
-                    changes: {from: 0, to: editor.state.doc.length, insert: ''}
-                });
+                editor.dispatch({changes: {from: 0, to: editor.state.doc.length, insert: ''}});
                 updatePreview();
             };
 
