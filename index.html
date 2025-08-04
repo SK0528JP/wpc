@@ -95,6 +95,8 @@
             background-color: var(--dark-surface);
             border-bottom: 1px solid var(--border-color);
             flex-shrink: 0;
+            flex-wrap: wrap; /* ここを追加 */
+            gap: 10px; /* ここを追加 */
         }
 
         .toolbar-title {
@@ -111,6 +113,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-wrap: wrap; /* ここを追加 */
         }
 
         .toolbar-actions button {
@@ -378,9 +381,9 @@
         <div class="modal-content">
             <span class="close-button">&times;</span>
             <h2 data-lang-ja="制作者情報" data-lang-en="Creator Info" data-lang-sv="Skaparinfo">制作者情報</h2>
-            <p data-lang-ja="<strong>制作者名：</strong>SK0528JP" data-lang-en="<strong>Creator:</strong> SK0528JP" data-lang-sv="<strong>Skapare:</strong> SK0528JP"><strong>制作者名：</strong>SK0528JP</p>
-            <p data-lang-ja="<strong>ホームページ：</strong> <a href='https://sk0528jp.github.io/' target='_blank'>https://sk0528jp.github.io/</a>" data-lang-en="<strong>Website:</strong> <a href='https://sk0528jp.github.io/' target='_blank'>https://sk0528jp.github.io/</a>" data-lang-sv="<strong>Hemsida:</strong> <a href='https://sk0528jp.github.io/' target='_blank'>https://sk0528jp.github.io/</a>"><strong>ホームページ：</strong> <a href="https://sk0528jp.github.io/" target="_blank">https://sk0528jp.github.io/</a></p>
-            <p data-lang-ja="<strong>メールアドレス：</strong> <a href='mailto:sk0528jp@gmail.com'>sk0528jp@gmail.com</a>" data-lang-en="<strong>Email:</strong> <a href='mailto:sk0528jp@gmail.com'>sk0528jp@gmail.com</a>" data-lang-sv="<strong>E-post:</strong> <a href='mailto:sk0528jp@gmail.com'>sk0528jp@gmail.com</a>"><strong>メールアドレス：</strong> <a href="mailto:sk0528jp@gmail.com">sk0528jp@gmail.com</a></p>
+            <p data-lang-ja="<strong>制作者名：</strong>SK0528JP" data-lang-en="<strong>Creator:</strong> SK0528JP" data-lang-sv="<strong>Skapare:</strong> SK0528JP"></p>
+            <p data-lang-ja="<strong>ホームページ：</strong> <a href='https://sk0528jp.github.io/' target='_blank'>https://sk0528jp.github.io/</a>" data-lang-en="<strong>Website:</strong> <a href='https://sk0528jp.github.io/' target='_blank'>https://sk0528jp.github.io/</a>" data-lang-sv="<strong>Hemsida:</strong> <a href='https://sk0528jp.github.io/' target='_blank'>https://sk0528jp.github.io/</a>"></p>
+            <p data-lang-ja="<strong>メールアドレス：</strong> <a href='mailto:sk0528jp@gmail.com'>sk0528jp@gmail.com</a>" data-lang-en="<strong>Email:</strong> <a href='mailto:sk0528jp@gmail.com'>sk0528jp@gmail.com</a>" data-lang-sv="<strong>E-post:</strong> <a href='mailto:sk0528jp@gmail.com'>sk0528jp@gmail.com</a>"></p>
         </div>
     </div>
 
@@ -396,7 +399,10 @@
             const creatorModal = document.getElementById('creator-modal');
             const closeModalBtn = document.querySelector('.close-button');
             const langButtons = document.querySelectorAll('.lang-switcher button');
+            // 要素をHTMLとして翻訳するように修正
             const elementsToTranslate = document.querySelectorAll('[data-lang-ja]');
+            const paragraphsToTranslate = creatorModal.querySelectorAll('p[data-lang-ja]');
+
 
             const htmlEditor = document.getElementById('html-editor');
             const cssEditor = document.getElementById('css-editor');
@@ -565,10 +571,12 @@
             };
 
             const updateTexts = (lang) => {
+                // 通常のテキストを更新
                 elementsToTranslate.forEach(el => {
-                    const translation = el.getAttribute(`data-lang-${lang}`);
-                    if (translation) {
-                        el.textContent = translation;
+                    if (el.tagName === 'P') {
+                        el.innerHTML = el.getAttribute(`data-lang-${lang}`);
+                    } else {
+                        el.textContent = el.getAttribute(`data-lang-${lang}`);
                     }
                 });
 
@@ -584,6 +592,16 @@
                 } else if (lang === 'sv') {
                     document.title = "WebPreviewCode・SK0528JP";
                 }
+            };
+
+            // creatorModal内のpタグのコンテンツをinnerHTMLで設定
+            const setModalContent = (lang) => {
+                paragraphsToTranslate.forEach(p => {
+                    const translation = p.getAttribute(`data-lang-${lang}`);
+                    if (translation) {
+                        p.innerHTML = translation; // innerHTMLを使用
+                    }
+                });
             };
             
             creatorInfoBtn.addEventListener('click', () => {
@@ -624,12 +642,15 @@
                     button.classList.add('active');
                     const lang = button.id.replace('lang-', '');
                     updateTexts(lang);
+                    setModalContent(lang);
                 });
             });
 
             loadEditors();
             loadTheme();
             updatePreview();
+            // 初期表示時にもモーダルの内容をセット
+            setModalContent('ja');
         });
     </script>
 </body>
