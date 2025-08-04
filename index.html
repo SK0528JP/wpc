@@ -3,26 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebPreviewCode</title>
+    <title>WebPreviewCode・SK0528JP</title>
     
     <link rel="icon" href="https://sk0528jp.github.io/images/favicon.ico">
     
     <meta property="og:title" content="WebPreviewCode">
     <meta property="og:description" content="HTML/CSS/JSのライブプレビューが可能なオンラインエディタです。">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://your-website-url.com">
-    <meta property="og:image" content="https://sk0528jp.github.io/images/favicon.ico">
+    <meta property="og:url" content="https://sk0528jp.github.io/wpc/">
+    <meta property="og:image" content="https://sk0528jp.github.io/images/wpc.png">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
     <style>
+        @font-face {
+            font-family: 'MiSans';
+            src: url('https://sk0528jp.github.io/font/MiSans-Normal.woff2') format('woff2');
+            font-weight: normal;
+            font-style: normal;
+        }
+
         :root {
-            --dark-bg: #1e1e1e;
-            --editor-bg: #2d2d2d;
-            --text-color: #f8f8f2;
-            --matcha-green: #4d7a4d;
+            --dark-bg: #121212;
+            --dark-surface: #1E1E1E;
+            --matcha-green: #5F7354;
+            --text-primary: #E8E8E8;
+            --text-secondary: #A0A0A0;
+            --font-family: 'MiSans', 'Roboto', sans-serif;
+            --editor-bg: #2a2a2a;
             --border-color: #383838;
             --button-bg: #444;
             --button-hover-bg: #555;
@@ -31,8 +42,10 @@
 
         body.light-theme {
             --dark-bg: #f5f5f5;
+            --dark-surface: #ffffff;
             --editor-bg: #ffffff;
-            --text-color: #1e1e1e;
+            --text-primary: #1e1e1e;
+            --text-secondary: #666;
             --border-color: #ccc;
             --button-bg: #eee;
             --button-hover-bg: #ddd;
@@ -45,9 +58,9 @@
         }
 
         body {
-            font-family: 'Roboto', sans-serif;
+            font-family: var(--font-family);
             background-color: var(--dark-bg);
-            color: var(--text-color);
+            color: var(--text-primary);
             margin: 0;
             padding: 0;
             display: flex;
@@ -62,7 +75,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 10px 20px;
-            background-color: var(--editor-bg);
+            background-color: var(--dark-surface);
             border-bottom: 1px solid var(--border-color);
             flex-shrink: 0;
         }
@@ -74,6 +87,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            font-family: var(--font-family);
         }
         
         .toolbar-actions {
@@ -84,7 +98,7 @@
 
         .toolbar-actions button {
             background-color: var(--button-bg);
-            color: var(--text-color);
+            color: var(--text-primary);
             border: none;
             padding: 8px 12px;
             border-radius: 4px;
@@ -105,7 +119,29 @@
             opacity: 0.5;
         }
 
-        .container {
+        /* 言語切り替えボタン */
+        .lang-switcher button {
+            background: none;
+            border: 1px solid var(--text-secondary);
+            color: var(--text-secondary);
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border-radius: 32px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .lang-switcher button:hover {
+            background-color: rgba(95, 115, 84, 0.2);
+            color: var(--matcha-green);
+        }
+        .lang-switcher button.active {
+            background-color: var(--matcha-green);
+            color: var(--dark-bg);
+            border-color: var(--matcha-green);
+        }
+
+        .container-main {
             display: flex;
             flex-grow: 1;
             overflow: hidden;
@@ -120,7 +156,7 @@
         }
 
         @media (max-width: 768px) {
-            .container {
+            .container-main {
                 flex-direction: column;
             }
             .editors, .preview-panel {
@@ -151,6 +187,7 @@
             font-size: 14px;
             font-weight: 500;
             color: var(--primary-color);
+            font-family: var(--font-family);
         }
         
         .editor-header-actions {
@@ -161,7 +198,7 @@
         .editor-header-actions button {
             background: none;
             border: none;
-            color: var(--text-color);
+            color: var(--text-secondary);
             cursor: pointer;
             opacity: 0.7;
             transition: opacity 0.2s;
@@ -174,7 +211,7 @@
         textarea {
             flex: 1;
             background-color: var(--editor-bg);
-            color: var(--text-color);
+            color: var(--text-primary);
             border: 1px solid var(--border-color);
             padding: 12px;
             font-size: 15px;
@@ -203,7 +240,7 @@
 
         iframe {
             flex: 1;
-            background-color: #ffffff;
+            background-color: var(--dark-surface);
             border: 1px solid var(--border-color);
             box-sizing: border-box;
             width: 100%;
@@ -226,7 +263,7 @@
         }
 
         .modal-content {
-            background-color: var(--editor-bg);
+            background-color: var(--dark-surface);
             padding: 30px;
             border-radius: 8px;
             width: 90%;
@@ -235,6 +272,7 @@
             position: relative;
             text-align: center;
             animation: fadeIn 0.3s ease-out;
+            border: 1px solid var(--border-color);
         }
 
         @keyframes fadeIn {
@@ -260,11 +298,14 @@
         .modal-content h2 {
             color: var(--primary-color);
             margin-top: 0;
+            font-family: var(--font-family);
+            font-weight: 500;
         }
 
         .modal-content p {
             margin: 15px 0;
             line-height: 1.8;
+            color: var(--text-secondary);
         }
 
         .modal-content a {
@@ -282,43 +323,48 @@
 </head>
 <body>
     <div class="toolbar">
-        <span class="toolbar-title">WebPreviewCode</span>
+        <span class="toolbar-title" data-lang-ja="WebPreviewCode" data-lang-en="WebPreviewCode" data-lang-sv="WebPreviewCode">WebPreviewCode</span>
         <div class="toolbar-actions">
-            <button id="open-new-window" title="プレビューを別ウィンドウで開く"><i class="fas fa-external-link-alt"></i></button>
-            <button id="reset-all-code" title="全コードをリセット"><i class="fas fa-undo"></i></button>
-            <button id="theme-toggle" title="テーマを切り替える"><i class="fas fa-sun"></i></button>
-            <button id="creator-info-btn" title="制作者情報"><i class="fas fa-info-circle"></i></button>
+            <div class="lang-switcher">
+                <button id="lang-ja" class="active">日本語</button>
+                <button id="lang-en">English</button>
+                <button id="lang-sv">Svenska</button>
+            </div>
+            <button id="open-new-window" title="プレビューを別ウィンドウで開く" data-lang-ja-title="プレビューを別ウィンドウで開く" data-lang-en-title="Open preview in new window" data-lang-sv-title="Öppna förhandsvisning i nytt fönster"><i class="fas fa-external-link-alt"></i></button>
+            <button id="reset-all-code" title="全コードをリセット" data-lang-ja-title="全コードをリセット" data-lang-en-title="Reset all code" data-lang-sv-title="Återställ all kod"><i class="fas fa-undo"></i></button>
+            <button id="theme-toggle" title="テーマを切り替える" data-lang-ja-title="テーマを切り替える" data-lang-en-title="Toggle theme" data-lang-sv-title="Växla tema"><i class="fas fa-sun"></i></button>
+            <button id="creator-info-btn" title="制作者情報" data-lang-ja-title="制作者情報" data-lang-en-title="Creator info" data-lang-sv-title="Skaparinfo"><i class="fas fa-info-circle"></i></button>
         </div>
     </div>
 
-    <div class="container">
+    <div class="container-main">
         <div class="editors">
             <div class="editor-panel">
                 <div class="editor-header">
-                    <label for="html-editor">HTML</label>
+                    <label for="html-editor" data-lang-ja="HTML" data-lang-en="HTML" data-lang-sv="HTML">HTML</label>
                     <div class="editor-header-actions">
-                        <button class="clear-btn" data-editor="html-editor" title="コードを消去"><i class="fas fa-trash-alt"></i></button>
-                        <button class="copy-btn" data-editor="html-editor" title="コードをコピー"><i class="fas fa-copy"></i></button>
+                        <button class="clear-btn" data-editor="html-editor" title="コードを消去" data-lang-ja-title="コードを消去" data-lang-en-title="Clear code" data-lang-sv-title="Rensa kod"><i class="fas fa-trash-alt"></i></button>
+                        <button class="copy-btn" data-editor="html-editor" title="コードをコピー" data-lang-ja-title="コードをコピー" data-lang-en-title="Copy code" data-lang-sv-title="Kopiera kod"><i class="fas fa-copy"></i></button>
                     </div>
                 </div>
                 <textarea id="html-editor" spellcheck="false"></textarea>
             </div>
             <div class="editor-panel">
                 <div class="editor-header">
-                    <label for="css-editor">CSS</label>
+                    <label for="css-editor" data-lang-ja="CSS" data-lang-en="CSS" data-lang-sv="CSS">CSS</label>
                     <div class="editor-header-actions">
-                        <button class="clear-btn" data-editor="css-editor" title="コードを消去"><i class="fas fa-trash-alt"></i></button>
-                        <button class="copy-btn" data-editor="css-editor" title="コードをコピー"><i class="fas fa-copy"></i></button>
+                        <button class="clear-btn" data-editor="css-editor" title="コードを消去" data-lang-ja-title="コードを消去" data-lang-en-title="Clear code" data-lang-sv-title="Rensa kod"><i class="fas fa-trash-alt"></i></button>
+                        <button class="copy-btn" data-editor="css-editor" title="コードをコピー" data-lang-ja-title="コードをコピー" data-lang-en-title="Copy code" data-lang-sv-title="Kopiera kod"><i class="fas fa-copy"></i></button>
                     </div>
                 </div>
                 <textarea id="css-editor" spellcheck="false"></textarea>
             </div>
             <div class="editor-panel">
                 <div class="editor-header">
-                    <label for="js-editor">JS</label>
+                    <label for="js-editor" data-lang-ja="JS" data-lang-en="JS" data-lang-sv="JS">JS</label>
                     <div class="editor-header-actions">
-                        <button class="clear-btn" data-editor="js-editor" title="コードを消去"><i class="fas fa-trash-alt"></i></button>
-                        <button class="copy-btn" data-editor="js-editor" title="コードをコピー"><i class="fas fa-copy"></i></button>
+                        <button class="clear-btn" data-editor="js-editor" title="コードを消去" data-lang-ja-title="コードを消去" data-lang-en-title="Clear code" data-lang-sv-title="Rensa kod"><i class="fas fa-trash-alt"></i></button>
+                        <button class="copy-btn" data-editor="js-editor" title="コードをコピー" data-lang-ja-title="コードをコピー" data-lang-en-title="Copy code" data-lang-sv-title="Kopiera kod"><i class="fas fa-copy"></i></button>
                     </div>
                 </div>
                 <textarea id="js-editor" spellcheck="false"></textarea>
@@ -326,7 +372,7 @@
         </div>
 
         <div class="preview-panel">
-            <label for="preview-frame">プレビュー</label>
+            <label for="preview-frame" data-lang-ja="プレビュー" data-lang-en="Preview" data-lang-sv="Förhandsvisning">プレビュー</label>
             <iframe id="preview-frame"></iframe>
         </div>
     </div>
@@ -334,10 +380,10 @@
     <div id="creator-modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
-            <h2>制作者情報</h2>
-            <p><strong>制作者名：</strong>SK0528JP</p>
-            <p><strong>ホームページ：</strong> <a href="https://sk0528jp.github.io/" target="_blank">https://sk0528jp.github.io/</a></p>
-            <p><strong>メールアドレス：</strong> <a href="mailto:sk0528jp@gmail.com">sk0528jp@gmail.com</a></p>
+            <h2 data-lang-ja="制作者情報" data-lang-en="Creator Info" data-lang-sv="Skaparinfo">制作者情報</h2>
+            <p data-lang-ja="<strong>制作者名：</strong>SK0528JP" data-lang-en="<strong>Creator:</strong> SK0528JP" data-lang-sv="<strong>Skapare:</strong> SK0528JP"><strong>制作者名：</strong>SK0528JP</p>
+            <p data-lang-ja="<strong>ホームページ：</strong> <a href='https://sk0528jp.github.io/' target='_blank'>https://sk0528jp.github.io/</a>" data-lang-en="<strong>Website:</strong> <a href='https://sk0528jp.github.io/' target='_blank'>https://sk0528jp.github.io/</a>" data-lang-sv="<strong>Hemsida:</strong> <a href='https://sk0528jp.github.io/' target='_blank'>https://sk0528jp.github.io/</a>"><strong>ホームページ：</strong> <a href="https://sk0528jp.github.io/" target="_blank">https://sk0528jp.github.io/</a></p>
+            <p data-lang-ja="<strong>メールアドレス：</strong> <a href='mailto:sk0528jp@gmail.com'>sk0528jp@gmail.com</a>" data-lang-en="<strong>Email:</strong> <a href='mailto:sk0528jp@gmail.com'>sk0528jp@gmail.com</a>" data-lang-sv="<strong>E-post:</strong> <a href='mailto:sk0528jp@gmail.com'>sk0528jp@gmail.com</a>"><strong>メールアドレス：</strong> <a href="mailto:sk0528jp@gmail.com">sk0528jp@gmail.com</a></p>
         </div>
     </div>
 
@@ -355,7 +401,9 @@
             const creatorInfoBtn = document.getElementById('creator-info-btn');
             const creatorModal = document.getElementById('creator-modal');
             const closeModalBtn = document.querySelector('.close-button');
-            
+            const langButtons = document.querySelectorAll('.lang-switcher button');
+            const elementsToTranslate = document.querySelectorAll('[data-lang-ja]');
+
             const defaultCode = {
                 html: ``,
                 css: ``,
@@ -415,20 +463,31 @@
             const toggleTheme = () => {
                 const isLight = document.body.classList.toggle('light-theme');
                 localStorage.setItem('editor_theme', isLight ? 'light' : 'dark');
-                themeToggleBtn.querySelector('i').className = isLight ? 'fas fa-moon' : 'fas fa-sun';
+                const themeIcon = themeToggleBtn.querySelector('i');
+                themeIcon.className = isLight ? 'fas fa-moon' : 'fas fa-sun';
             };
 
             const loadTheme = () => {
                 const savedTheme = localStorage.getItem('editor_theme');
                 if (savedTheme === 'light') {
                     document.body.classList.add('light-theme');
-                    themeToggleBtn.querySelector('i').className = 'fas fa-moon';
+                    const themeIcon = themeToggleBtn.querySelector('i');
+                    themeIcon.className = 'fas fa-moon';
                 }
             };
             
             const resetAllCode = () => {
-                const confirmReset = confirm("本当にすべてのコードを初期状態に戻しますか？現在の内容は失われます。");
-                if (confirmReset) {
+                const lang = document.querySelector('.lang-switcher button.active').id.replace('lang-', '');
+                let confirmMessage = '';
+                if (lang === 'ja') {
+                    confirmMessage = "本当にすべてのコードを初期状態に戻しますか？現在の内容は失われます。";
+                } else if (lang === 'en') {
+                    confirmMessage = "Are you sure you want to reset all code? Your current work will be lost.";
+                } else if (lang === 'sv') {
+                    confirmMessage = "Är du säker på att du vill återställa all kod? Ditt nuvarande arbete kommer att förloras.";
+                }
+                
+                if (confirm(confirmMessage)) {
                     htmlEditor.value = defaultCode.html;
                     cssEditor.value = defaultCode.css;
                     jsEditor.value = defaultCode.js;
@@ -444,9 +503,19 @@
 
             const copyCode = (editorId) => {
                 const editor = document.getElementById(editorId);
+                const lang = document.querySelector('.lang-switcher button.active').id.replace('lang-', '');
                 editor.select();
                 document.execCommand('copy');
-                alert("コードがコピーされました！");
+                
+                let alertMessage = '';
+                if (lang === 'ja') {
+                    alertMessage = "コードがコピーされました！";
+                } else if (lang === 'en') {
+                    alertMessage = "Code copied!";
+                } else if (lang === 'sv') {
+                    alertMessage = "Koden kopierades!";
+                }
+                alert(alertMessage);
             };
 
             const openInNewWindow = () => {
@@ -471,6 +540,31 @@
                 newWindow.document.close();
             };
 
+            // 言語切り替え機能
+            const updateTexts = (lang) => {
+                elementsToTranslate.forEach(el => {
+                    const translation = el.getAttribute(`data-lang-${lang}`);
+                    if (translation) {
+                        el.textContent = translation;
+                    }
+                });
+
+                // title属性の更新
+                const buttonsWithTitle = document.querySelectorAll('[data-lang-ja-title]');
+                buttonsWithTitle.forEach(btn => {
+                    btn.setAttribute('title', btn.getAttribute(`data-lang-${lang}-title`));
+                });
+                
+                // タイトルの変更
+                if (lang === 'ja') {
+                    document.title = "WebPreviewCode・SK0528JP";
+                } else if (lang === 'en') {
+                    document.title = "WebPreviewCode・SK0528JP";
+                } else if (lang === 'sv') {
+                    document.title = "WebPreviewCode・SK0528JP";
+                }
+            };
+            
             // モーダル表示/非表示の処理
             creatorInfoBtn.addEventListener('click', () => {
                 creatorModal.style.display = 'flex';
@@ -504,6 +598,15 @@
                 button.addEventListener('click', (e) => {
                     const editorId = e.currentTarget.dataset.editor;
                     clearEditor(editorId);
+                });
+            });
+
+            langButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    langButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    const lang = button.id.replace('lang-', '');
+                    updateTexts(lang);
                 });
             });
 
