@@ -384,13 +384,12 @@
 
     <script type="module">
         import {EditorView, EditorState} from "https://cdn.jsdelivr.net/npm/@codemirror/view@6.26.1/dist/index.min.js";
-        import {indentWithTab} from "https://cdn.jsdelivr.net/npm/@codemirror/commands@6.3.3/dist/index.min.js";
         import {Compartment} from "https://cdn.jsdelivr.net/npm/@codemirror/state@6.4.1/dist/index.min.js";
-        import {syntaxHighlighting, defaultHighlightStyle} from "https://cdn.jsdelivr.net/npm/@codemirror/language@6.10.1/dist/index.min.js";
         import {html} from "https://cdn.jsdelivr.net/npm/@codemirror/lang-html@6.4.1/dist/index.min.js";
         import {css} from "https://cdn.jsdelivr.net/npm/@codemirror/lang-css@6.2.1/dist/index.min.js";
         import {javascript} from "https://cdn.jsdelivr.net/npm/@codemirror/lang-javascript@6.2.1/dist/index.min.js";
         import {oneDark} from "https://cdn.jsdelivr.net/npm/@codemirror/theme-one-dark@6.1.2/+esm";
+        import {basicSetup} from "https://cdn.jsdelivr.net/npm/@codemirror/basic-setup@0.20.0/dist/index.min.js";
 
         document.addEventListener('DOMContentLoaded', () => {
             const previewFrame = document.getElementById('preview-frame');
@@ -426,7 +425,7 @@
                                 }
                             }),
                             EditorView.lineWrapping,
-                            theme.of(oneDark) // デフォルトでダークテーマを適用
+                            theme.of(oneDark)
                         ]
                     }),
                     parent: document.getElementById(`${parent}-container`)
@@ -485,7 +484,15 @@
                 const themeIcon = themeToggleBtn.querySelector('i');
                 themeIcon.className = isLight ? 'fas fa-moon' : 'fas fa-sun';
 
-                const newTheme = isLight ? EditorView.theme({}, {dark: false}) : oneDark;
+                // Lightテーマ用のCodeMirror設定
+                const lightTheme = EditorView.theme({
+                    "&": {
+                        backgroundColor: "var(--editor-bg)",
+                        color: "var(--text-primary)"
+                    }
+                }, { dark: false });
+
+                const newTheme = isLight ? lightTheme : oneDark;
                 htmlEditor.dispatch({effects: theme.reconfigure(newTheme)});
                 cssEditor.dispatch({effects: theme.reconfigure(newTheme)});
                 jsEditor.dispatch({effects: theme.reconfigure(newTheme)});
@@ -498,10 +505,16 @@
                     const themeIcon = themeToggleBtn.querySelector('i');
                     themeIcon.className = 'fas fa-moon';
                     
-                    const newTheme = EditorView.theme({}, {dark: false});
-                    htmlEditor.dispatch({effects: theme.reconfigure(newTheme)});
-                    cssEditor.dispatch({effects: theme.reconfigure(newTheme)});
-                    jsEditor.dispatch({effects: theme.reconfigure(newTheme)});
+                    const lightTheme = EditorView.theme({
+                        "&": {
+                            backgroundColor: "var(--editor-bg)",
+                            color: "var(--text-primary)"
+                        }
+                    }, { dark: false });
+                    
+                    htmlEditor.dispatch({effects: theme.reconfigure(lightTheme)});
+                    cssEditor.dispatch({effects: theme.reconfigure(lightTheme)});
+                    jsEditor.dispatch({effects: theme.reconfigure(lightTheme)});
                 }
             };
             
