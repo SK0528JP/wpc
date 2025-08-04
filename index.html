@@ -51,7 +51,8 @@
             --button-hover-bg: #ddd;
         }
 
-        .cm-editor {
+        /* textareaのスタイルを追加 */
+        textarea {
             flex: 1;
             font-family: 'Roboto Mono', monospace;
             font-size: 15px;
@@ -60,6 +61,10 @@
             line-height: 1.6;
             box-sizing: border-box;
             outline: none;
+            background-color: var(--editor-bg);
+            color: var(--text-primary);
+            padding: 10px;
+            resize: none;
         }
 
         * {
@@ -217,10 +222,6 @@
         .editor-header-actions button:hover {
             opacity: 1;
         }
-
-        textarea {
-            display: none;
-        }
         
         .preview-panel {
             border-left: 2px solid var(--border-color);
@@ -342,7 +343,7 @@
                         <button class="copy-btn" data-editor="html" title="コードをコピー" data-lang-ja-title="コードをコピー" data-lang-en-title="Copy code" data-lang-sv-title="Kopiera kod"><i class="fas fa-copy"></i></button>
                     </div>
                 </div>
-                <div id="html-editor-container"></div>
+                <textarea id="html-editor"></textarea>
             </div>
             <div class="editor-panel">
                 <div class="editor-header">
@@ -352,7 +353,7 @@
                         <button class="copy-btn" data-editor="css" title="コードをコピー" data-lang-ja-title="コードをコピー" data-lang-en-title="Copy code" data-lang-sv-title="Kopiera kod"><i class="fas fa-copy"></i></button>
                     </div>
                 </div>
-                <div id="css-editor-container"></div>
+                <textarea id="css-editor"></textarea>
             </div>
             <div class="editor-panel">
                 <div class="editor-header">
@@ -362,7 +363,7 @@
                         <button class="copy-btn" data-editor="js" title="コードをコピー" data-lang-ja-title="コードをコピー" data-lang-en-title="Copy code" data-lang-sv-title="Kopiera kod"><i class="fas fa-copy"></i></button>
                     </div>
                 </div>
-                <div id="js-editor-container"></div>
+                <textarea id="js-editor"></textarea>
             </div>
         </div>
 
@@ -382,15 +383,7 @@
         </div>
     </div>
 
-    <script type="module">
-        import {EditorView, EditorState} from "https://cdn.jsdelivr.net/npm/@codemirror/view@6.26.1/dist/index.min.js";
-        import {Compartment} from "https://cdn.jsdelivr.net/npm/@codemirror/state@6.4.1/dist/index.min.js";
-        import {html} from "https://cdn.jsdelivr.net/npm/@codemirror/lang-html@6.4.1/dist/index.min.js";
-        import {css} from "https://cdn.jsdelivr.net/npm/@codemirror/lang-css@6.2.1/dist/index.min.js";
-        import {javascript} from "https://cdn.jsdelivr.net/npm/@codemirror/lang-javascript@6.2.1/dist/index.min.js";
-        import {oneDark} from "https://cdn.jsdelivr.net/npm/@codemirror/theme-one-dark@6.1.2/+esm";
-        import {basicSetup} from "https://cdn.jsdelivr.net/npm/@codemirror/basic-setup@0.20.0/dist/index.min.js";
-
+    <script>
         document.addEventListener('DOMContentLoaded', () => {
             const previewFrame = document.getElementById('preview-frame');
             const themeToggleBtn = document.getElementById('theme-toggle');
@@ -404,45 +397,20 @@
             const langButtons = document.querySelectorAll('.lang-switcher button');
             const elementsToTranslate = document.querySelectorAll('[data-lang-ja]');
 
+            const htmlEditor = document.getElementById('html-editor');
+            const cssEditor = document.getElementById('css-editor');
+            const jsEditor = document.getElementById('js-editor');
+
             const defaultCode = {
-                html: ``,
-                css: ``,
-                js: ``
-            };
-            
-            const theme = new Compartment();
-
-            const createEditor = (parent, extension, defaultText) => {
-                const editor = new EditorView({
-                    state: EditorState.create({
-                        doc: localStorage.getItem(`editor_${parent}_code`) || defaultText,
-                        extensions: [
-                            basicSetup,
-                            extension(),
-                            EditorView.updateListener.of((update) => {
-                                if (update.docChanged) {
-                                    debouncedUpdatePreview();
-                                }
-                            }),
-                            EditorView.lineWrapping,
-                            theme.of(oneDark)
-                        ]
-                    }),
-                    parent: document.getElementById(`${parent}-container`)
-                });
-                return editor;
+                html: `<h1>Hello World</h1>\n<p>これはライブプレビューです。</p>`,
+                css: `h1 {\n  color: #5F7354;\n}\n\np {\n  font-family: sans-serif;\n}`,
+                js: `console.log("Hello, World!");`
             };
 
-            const htmlEditor = createEditor('html', html, defaultCode.html);
-            const cssEditor = createEditor('css', css, defaultCode.css);
-            const jsEditor = createEditor('js', javascript, defaultCode.js);
-
-            const getEditorContent = (editor) => editor.state.doc.toString();
-            
             const updatePreview = () => {
-                const htmlCode = getEditorContent(htmlEditor);
-                const cssCode = getEditorContent(cssEditor);
-                const jsCode = getEditorContent(jsEditor);
+                const htmlCode = htmlEditor.value;
+                const cssCode = cssEditor.value;
+                const jsCode = jsEditor.value;
 
                 const content = `
                     <!DOCTYPE html>
@@ -477,25 +445,23 @@
             };
             
             const debouncedUpdatePreview = debounce(updatePreview, 500);
+
+            // textareaの入力イベントを監視
+            htmlEditor.addEventListener('input', debouncedUpdatePreview);
+            cssEditor.addEventListener('input', debouncedUpdatePreview);
+            jsEditor.addEventListener('input', debouncedUpdatePreview);
             
+            const loadEditors = () => {
+                htmlEditor.value = localStorage.getItem('editor_html_code') || defaultCode.html;
+                cssEditor.value = localStorage.getItem('editor_css_code') || defaultCode.css;
+                jsEditor.value = localStorage.getItem('editor_js_code') || defaultCode.js;
+            }
+
             const toggleTheme = () => {
                 const isLight = document.body.classList.toggle('light-theme');
                 localStorage.setItem('editor_theme', isLight ? 'light' : 'dark');
                 const themeIcon = themeToggleBtn.querySelector('i');
                 themeIcon.className = isLight ? 'fas fa-moon' : 'fas fa-sun';
-
-                // Lightテーマ用のCodeMirror設定
-                const lightTheme = EditorView.theme({
-                    "&": {
-                        backgroundColor: "var(--editor-bg)",
-                        color: "var(--text-primary)"
-                    }
-                }, { dark: false });
-
-                const newTheme = isLight ? lightTheme : oneDark;
-                htmlEditor.dispatch({effects: theme.reconfigure(newTheme)});
-                cssEditor.dispatch({effects: theme.reconfigure(newTheme)});
-                jsEditor.dispatch({effects: theme.reconfigure(newTheme)});
             };
 
             const loadTheme = () => {
@@ -504,17 +470,6 @@
                     document.body.classList.add('light-theme');
                     const themeIcon = themeToggleBtn.querySelector('i');
                     themeIcon.className = 'fas fa-moon';
-                    
-                    const lightTheme = EditorView.theme({
-                        "&": {
-                            backgroundColor: "var(--editor-bg)",
-                            color: "var(--text-primary)"
-                        }
-                    }, { dark: false });
-                    
-                    htmlEditor.dispatch({effects: theme.reconfigure(lightTheme)});
-                    cssEditor.dispatch({effects: theme.reconfigure(lightTheme)});
-                    jsEditor.dispatch({effects: theme.reconfigure(lightTheme)});
                 }
             };
             
@@ -530,9 +485,9 @@
                 }
                 
                 if (confirm(confirmMessage)) {
-                    htmlEditor.dispatch({changes: {from: 0, to: htmlEditor.state.doc.length, insert: defaultCode.html}});
-                    cssEditor.dispatch({changes: {from: 0, to: cssEditor.state.doc.length, insert: defaultCode.css}});
-                    jsEditor.dispatch({changes: {from: 0, to: jsEditor.state.doc.length, insert: defaultCode.js}});
+                    htmlEditor.value = defaultCode.html;
+                    cssEditor.value = defaultCode.css;
+                    jsEditor.value = defaultCode.js;
                     updatePreview();
                 }
             };
@@ -543,7 +498,7 @@
                 if (editorId === 'css') editor = cssEditor;
                 if (editorId === 'js') editor = jsEditor;
 
-                editor.dispatch({changes: {from: 0, to: editor.state.doc.length, insert: ''}});
+                editor.value = '';
                 updatePreview();
             };
 
@@ -553,8 +508,8 @@
                 if (editorId === 'css') editor = cssEditor;
                 if (editorId === 'js') editor = jsEditor;
 
-                const code = getEditorContent(editor);
-                navigator.clipboard.writeText(code);
+                editor.select();
+                navigator.clipboard.writeText(editor.value);
 
                 const lang = document.querySelector('.lang-switcher button.active').id.replace('lang-', '');
                 let alertMessage = '';
@@ -569,9 +524,9 @@
             };
 
             const openInNewWindow = () => {
-                const htmlCode = getEditorContent(htmlEditor);
-                const cssCode = getEditorContent(cssEditor);
-                const jsCode = getEditorContent(jsEditor);
+                const htmlCode = htmlEditor.value;
+                const cssCode = cssEditor.value;
+                const jsCode = jsEditor.value;
                 
                 const newWindow = window.open('', '_blank');
                 newWindow.document.write(`
@@ -653,6 +608,7 @@
                 });
             });
 
+            loadEditors();
             loadTheme();
             updatePreview();
         });
