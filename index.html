@@ -18,6 +18,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
+    <script src="https://cdn.jsdelivr.net/npm/@codemirror/state@6.4.1/dist/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@codemirror/view@6.26.1/dist/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@codemirror/language@6.10.1/dist/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@codemirror/lang-html@6.4.1/dist/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@codemirror/lang-css@6.2.1/dist/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@codemirror/lang-javascript@6.2.1/dist/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@codemirror/basic-setup@0.21.1/dist/index.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@6.0.0-rc.2/theme/dracula.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@6.0.0-rc.2/theme/one-dark.min.css">
+
     <style>
         @font-face {
             font-family: 'MiSans';
@@ -51,6 +61,40 @@
             --button-hover-bg: #ddd;
         }
 
+        /* CodeMirrorのダークテーマを適用 */
+        body:not(.light-theme) .cm-editor {
+            background-color: var(--editor-bg) !important;
+        }
+
+        /* CodeMirrorのライトテーマを適用 */
+        body.light-theme .cm-editor {
+            background-color: var(--editor-bg) !important;
+            color: var(--text-primary) !important;
+        }
+
+        /* CodeMirrorの基本的なスタイル */
+        .cm-editor {
+            flex: 1;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            line-height: 1.6;
+            box-sizing: border-box;
+            outline: none;
+        }
+        
+        .cm-theme-dark {
+            background-color: #2a2a2a;
+            color: #E8E8E8;
+        }
+        
+        .cm-theme-light {
+            background-color: #ffffff;
+            color: #1e1e1e;
+        }
+
+        /* 他のスタイルは変更なし */
         * {
             box-sizing: border-box;
             -webkit-font-smoothing: antialiased;
@@ -119,7 +163,6 @@
             opacity: 0.5;
         }
 
-        /* 言語切り替えボタン */
         .lang-switcher button {
             background: none;
             border: 1px solid var(--text-secondary);
@@ -209,22 +252,7 @@
         }
 
         textarea {
-            flex: 1;
-            background-color: var(--editor-bg);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-            padding: 12px;
-            font-size: 15px;
-            font-family: 'Roboto Mono', 'Courier New', Courier, monospace;
-            resize: none;
-            box-sizing: border-box;
-            outline: none;
-            transition: border-color 0.2s, background-color 0.3s, color 0.3s;
-            line-height: 1.6;
-        }
-
-        textarea:focus {
-            border-color: var(--primary-color);
+            display: none; /* CodeMirrorを使用するため非表示に */
         }
         
         .preview-panel {
@@ -232,7 +260,7 @@
         }
 
         @media (max-width: 768px) {
-             .preview-panel {
+            .preview-panel {
                 border-left: none;
                 border-top: 2px solid var(--border-color);
             }
@@ -240,12 +268,13 @@
 
         iframe {
             flex: 1;
-            background-color: var(--dark-surface);
+            background-color: white; /* プレビューを白色に固定 */
             border: 1px solid var(--border-color);
             box-sizing: border-box;
             width: 100%;
             height: 100%;
             border-radius: 4px;
+            transition: border-color 0.3s;
         }
 
         /* モーダルウィンドウのスタイル */
@@ -277,7 +306,7 @@
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-20px); }
-            to   { opacity: 1; transform: translateY(0); }
+            to  { opacity: 1; transform: translateY(0); }
         }
 
         .close-button {
@@ -343,31 +372,31 @@
                 <div class="editor-header">
                     <label for="html-editor" data-lang-ja="HTML" data-lang-en="HTML" data-lang-sv="HTML">HTML</label>
                     <div class="editor-header-actions">
-                        <button class="clear-btn" data-editor="html-editor" title="コードを消去" data-lang-ja-title="コードを消去" data-lang-en-title="Clear code" data-lang-sv-title="Rensa kod"><i class="fas fa-trash-alt"></i></button>
-                        <button class="copy-btn" data-editor="html-editor" title="コードをコピー" data-lang-ja-title="コードをコピー" data-lang-en-title="Copy code" data-lang-sv-title="Kopiera kod"><i class="fas fa-copy"></i></button>
+                        <button class="clear-btn" data-editor="html" title="コードを消去" data-lang-ja-title="コードを消去" data-lang-en-title="Clear code" data-lang-sv-title="Rensa kod"><i class="fas fa-trash-alt"></i></button>
+                        <button class="copy-btn" data-editor="html" title="コードをコピー" data-lang-ja-title="コードをコピー" data-lang-en-title="Copy code" data-lang-sv-title="Kopiera kod"><i class="fas fa-copy"></i></button>
                     </div>
                 </div>
-                <textarea id="html-editor" spellcheck="false"></textarea>
+                <div id="html-editor-container"></div>
             </div>
             <div class="editor-panel">
                 <div class="editor-header">
                     <label for="css-editor" data-lang-ja="CSS" data-lang-en="CSS" data-lang-sv="CSS">CSS</label>
                     <div class="editor-header-actions">
-                        <button class="clear-btn" data-editor="css-editor" title="コードを消去" data-lang-ja-title="コードを消去" data-lang-en-title="Clear code" data-lang-sv-title="Rensa kod"><i class="fas fa-trash-alt"></i></button>
-                        <button class="copy-btn" data-editor="css-editor" title="コードをコピー" data-lang-ja-title="コードをコピー" data-lang-en-title="Copy code" data-lang-sv-title="Kopiera kod"><i class="fas fa-copy"></i></button>
+                        <button class="clear-btn" data-editor="css" title="コードを消去" data-lang-ja-title="コードを消去" data-lang-en-title="Clear code" data-lang-sv-title="Rensa kod"><i class="fas fa-trash-alt"></i></button>
+                        <button class="copy-btn" data-editor="css" title="コードをコピー" data-lang-ja-title="コードをコピー" data-lang-en-title="Copy code" data-lang-sv-title="Kopiera kod"><i class="fas fa-copy"></i></button>
                     </div>
                 </div>
-                <textarea id="css-editor" spellcheck="false"></textarea>
+                <div id="css-editor-container"></div>
             </div>
             <div class="editor-panel">
                 <div class="editor-header">
                     <label for="js-editor" data-lang-ja="JS" data-lang-en="JS" data-lang-sv="JS">JS</label>
                     <div class="editor-header-actions">
-                        <button class="clear-btn" data-editor="js-editor" title="コードを消去" data-lang-ja-title="コードを消去" data-lang-en-title="Clear code" data-lang-sv-title="Rensa kod"><i class="fas fa-trash-alt"></i></button>
-                        <button class="copy-btn" data-editor="js-editor" title="コードをコピー" data-lang-ja-title="コードをコピー" data-lang-en-title="Copy code" data-lang-sv-title="Kopiera kod"><i class="fas fa-copy"></i></button>
+                        <button class="clear-btn" data-editor="js" title="コードを消去" data-lang-ja-title="コードを消去" data-lang-en-title="Clear code" data-lang-sv-title="Rensa kod"><i class="fas fa-trash-alt"></i></button>
+                        <button class="copy-btn" data-editor="js" title="コードをコピー" data-lang-ja-title="コードをコピー" data-lang-en-title="Copy code" data-lang-sv-title="Kopiera kod"><i class="fas fa-copy"></i></button>
                     </div>
                 </div>
-                <textarea id="js-editor" spellcheck="false"></textarea>
+                <div id="js-editor-container"></div>
             </div>
         </div>
 
@@ -387,11 +416,13 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import {EditorView, basicSetup} from "https://cdn.jsdelivr.net/npm/codemirror@6.0.0-rc.2/+esm";
+        import {html} from "https://cdn.jsdelivr.net/npm/@codemirror/lang-html@6.0.0-rc.2/+esm";
+        import {css} from "https://cdn.jsdelivr.net/npm/@codemirror/lang-css@6.0.0-rc.2/+esm";
+        import {javascript} from "https://cdn.jsdelivr.net/npm/@codemirror/lang-javascript@6.0.0-rc.2/+esm";
+        
         document.addEventListener('DOMContentLoaded', () => {
-            const htmlEditor = document.getElementById('html-editor');
-            const cssEditor = document.getElementById('css-editor');
-            const jsEditor = document.getElementById('js-editor');
             const previewFrame = document.getElementById('preview-frame');
             const themeToggleBtn = document.getElementById('theme-toggle');
             const resetAllCodeBtn = document.getElementById('reset-all-code');
@@ -410,23 +441,36 @@
                 js: ``
             };
             
-            const loadCode = () => {
-                htmlEditor.value = localStorage.getItem('editor_html_code') || defaultCode.html;
-                cssEditor.value = localStorage.getItem('editor_css_code') || defaultCode.css;
-                jsEditor.value = localStorage.getItem('editor_js_code') || defaultCode.js;
-                updatePreview();
+            // CodeMirrorエディタの初期化
+            const createEditor = (parent, extension, defaultText) => {
+                const editor = new EditorView({
+                    state: CodeMirror.EditorState.create({
+                        doc: localStorage.getItem(`editor_${parent}_code`) || defaultText,
+                        extensions: [
+                            basicSetup,
+                            extension(),
+                            EditorView.updateListener.of((update) => {
+                                if (update.docChanged) {
+                                    debouncedUpdatePreview();
+                                }
+                            })
+                        ]
+                    }),
+                    parent: document.getElementById(`${parent}-container`)
+                });
+                return editor;
             };
 
-            const autoSave = () => {
-                localStorage.setItem('editor_html_code', htmlEditor.value);
-                localStorage.setItem('editor_css_code', cssEditor.value);
-                localStorage.setItem('editor_js_code', jsEditor.value);
-            };
+            const htmlEditor = createEditor('html-editor', html, defaultCode.html);
+            const cssEditor = createEditor('css-editor', css, defaultCode.css);
+            const jsEditor = createEditor('js-editor', javascript, defaultCode.js);
 
+            const getEditorContent = (editor) => editor.state.doc.toString();
+            
             const updatePreview = () => {
-                const htmlCode = htmlEditor.value;
-                const cssCode = cssEditor.value;
-                const jsCode = jsEditor.value;
+                const htmlCode = getEditorContent(htmlEditor);
+                const cssCode = getEditorContent(cssEditor);
+                const jsCode = getEditorContent(jsEditor);
 
                 const content = `
                     <!DOCTYPE html>
@@ -447,7 +491,10 @@
                 
                 previewFrame.srcdoc = content;
                 
-                autoSave();
+                // 自動保存
+                localStorage.setItem('editor_html_code', htmlCode);
+                localStorage.setItem('editor_css_code', cssCode);
+                localStorage.setItem('editor_js_code', jsCode);
             };
 
             const debounce = (func, delay) => {
@@ -488,25 +535,41 @@
                 }
                 
                 if (confirm(confirmMessage)) {
-                    htmlEditor.value = defaultCode.html;
-                    cssEditor.value = defaultCode.css;
-                    jsEditor.value = defaultCode.js;
+                    htmlEditor.dispatch({
+                        changes: {from: 0, to: htmlEditor.state.doc.length, insert: defaultCode.html}
+                    });
+                    cssEditor.dispatch({
+                        changes: {from: 0, to: cssEditor.state.doc.length, insert: defaultCode.css}
+                    });
+                    jsEditor.dispatch({
+                        changes: {from: 0, to: jsEditor.state.doc.length, insert: defaultCode.js}
+                    });
                     updatePreview();
                 }
             };
 
             const clearEditor = (editorId) => {
-                const editor = document.getElementById(editorId);
-                editor.value = '';
+                let editor;
+                if (editorId === 'html') editor = htmlEditor;
+                if (editorId === 'css') editor = cssEditor;
+                if (editorId === 'js') editor = jsEditor;
+
+                editor.dispatch({
+                    changes: {from: 0, to: editor.state.doc.length, insert: ''}
+                });
                 updatePreview();
             };
 
             const copyCode = (editorId) => {
-                const editor = document.getElementById(editorId);
+                let editor;
+                if (editorId === 'html') editor = htmlEditor;
+                if (editorId === 'css') editor = cssEditor;
+                if (editorId === 'js') editor = jsEditor;
+
+                const code = getEditorContent(editor);
+                navigator.clipboard.writeText(code);
+
                 const lang = document.querySelector('.lang-switcher button.active').id.replace('lang-', '');
-                editor.select();
-                document.execCommand('copy');
-                
                 let alertMessage = '';
                 if (lang === 'ja') {
                     alertMessage = "コードがコピーされました！";
@@ -519,9 +582,9 @@
             };
 
             const openInNewWindow = () => {
-                const htmlCode = htmlEditor.value;
-                const cssCode = cssEditor.value;
-                const jsCode = jsEditor.value;
+                const htmlCode = getEditorContent(htmlEditor);
+                const cssCode = getEditorContent(cssEditor);
+                const jsCode = getEditorContent(jsEditor);
                 
                 const newWindow = window.open('', '_blank');
                 newWindow.document.write(`
@@ -540,7 +603,6 @@
                 newWindow.document.close();
             };
 
-            // 言語切り替え機能
             const updateTexts = (lang) => {
                 elementsToTranslate.forEach(el => {
                     const translation = el.getAttribute(`data-lang-${lang}`);
@@ -549,13 +611,11 @@
                     }
                 });
 
-                // title属性の更新
                 const buttonsWithTitle = document.querySelectorAll('[data-lang-ja-title]');
                 buttonsWithTitle.forEach(btn => {
                     btn.setAttribute('title', btn.getAttribute(`data-lang-${lang}-title`));
                 });
                 
-                // タイトルの変更
                 if (lang === 'ja') {
                     document.title = "WebPreviewCode・SK0528JP";
                 } else if (lang === 'en') {
@@ -565,7 +625,6 @@
                 }
             };
             
-            // モーダル表示/非表示の処理
             creatorInfoBtn.addEventListener('click', () => {
                 creatorModal.style.display = 'flex';
             });
@@ -580,9 +639,6 @@
                 }
             });
 
-            htmlEditor.addEventListener('keyup', debouncedUpdatePreview);
-            cssEditor.addEventListener('keyup', debouncedUpdatePreview);
-            jsEditor.addEventListener('keyup', debouncedUpdatePreview);
             themeToggleBtn.addEventListener('click', toggleTheme);
             resetAllCodeBtn.addEventListener('click', resetAllCode);
             openNewWindowBtn.addEventListener('click', openInNewWindow);
@@ -611,7 +667,7 @@
             });
 
             loadTheme();
-            loadCode();
+            updatePreview();
         });
     </script>
 </body>
