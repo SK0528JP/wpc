@@ -65,6 +65,7 @@
             color: var(--text-primary);
             padding: 10px;
             resize: none;
+            transition: border-color 0.3s;
         }
 
         * {
@@ -401,12 +402,13 @@
             const cssEditor = document.getElementById('css-editor');
             const jsEditor = document.getElementById('js-editor');
 
+            // 初期コードを空に設定
             const defaultCode = {
-                html: `<h1>Hello World</h1>\n<p>これはライブプレビューです。</p>`,
-                css: `h1 {\n  color: #5F7354;\n}\n\np {\n  font-family: sans-serif;\n}`,
-                js: `console.log("Hello, World!");`
+                html: ``,
+                css: ``,
+                js: ``
             };
-
+            
             const updatePreview = () => {
                 const htmlCode = htmlEditor.value;
                 const cssCode = cssEditor.value;
@@ -502,25 +504,42 @@
                 updatePreview();
             };
 
-            const copyCode = (editorId) => {
+            const copyCode = async (editorId, button) => {
                 let editor;
                 if (editorId === 'html') editor = htmlEditor;
                 if (editorId === 'css') editor = cssEditor;
                 if (editorId === 'js') editor = jsEditor;
 
-                editor.select();
-                navigator.clipboard.writeText(editor.value);
+                const code = editor.value;
 
-                const lang = document.querySelector('.lang-switcher button.active').id.replace('lang-', '');
-                let alertMessage = '';
-                if (lang === 'ja') {
-                    alertMessage = "コードがコピーされました！";
-                } else if (lang === 'en') {
-                    alertMessage = "Code copied!";
-                } else if (lang === 'sv') {
-                    alertMessage = "Koden kopierades!";
+                try {
+                    await navigator.clipboard.writeText(code);
+
+                    const icon = button.querySelector('i');
+                    const originalIconClass = icon.className;
+                    const originalTitle = button.title;
+                    const lang = document.querySelector('.lang-switcher button.active').id.replace('lang-', '');
+                    let newTitle = '';
+
+                    if (lang === 'ja') {
+                        newTitle = "コードをコピーしました";
+                    } else if (lang === 'en') {
+                        newTitle = "Code copied!";
+                    } else if (lang === 'sv') {
+                        newTitle = "Koden kopierades!";
+                    }
+
+                    icon.className = 'fas fa-check';
+                    button.title = newTitle;
+
+                    setTimeout(() => {
+                        icon.className = originalIconClass;
+                        button.title = originalTitle;
+                    }, 2000); // 2秒後に元に戻す
+
+                } catch (err) {
+                    console.error('Failed to copy text: ', err);
                 }
-                alert(alertMessage);
             };
 
             const openInNewWindow = () => {
@@ -588,7 +607,7 @@
             copyButtons.forEach(button => {
                 button.addEventListener('click', (e) => {
                     const editorId = e.currentTarget.dataset.editor;
-                    copyCode(editorId);
+                    copyCode(editorId, e.currentTarget);
                 });
             });
 
